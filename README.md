@@ -15,5 +15,5 @@ create this file `~/Library/Application\ Support/io.datasette.llm/extra-openai-m
 use it:
 
 ```shell
-llm -m cloudflare 'tell me something about barack obama'
+llm chat --no-stream -m cloudflare
 ```
