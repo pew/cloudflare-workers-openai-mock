@@ -8,8 +8,8 @@ create this file `~/Library/Application\ Support/io.datasette.llm/extra-openai-m
 
 ```yaml
 - model_id: cloudflare
-  model_name: "@hf/thebloke/llama-2-13b-chat-awq"
-  api_base: "https://openai-api.foobar.workers.dev/"
+  model_name: '@hf/thebloke/llama-2-13b-chat-awq'
+  api_base: 'https://openai-api.foobar.workers.dev/'
 ```
 
 use it:
