@@ -93,7 +93,7 @@ export default {
     for await (const part of resp) {
       const text = textDecoder.decode(part)
       const lines = text.split('\n')
-      lines.forEach((element, index) => {
+      lines.forEach((element, idx) => {
         if (element.includes('[DONE]')) {
           const data = {
             id: 'chatcmpl-123',
@@ -107,6 +107,7 @@ export default {
         if (element.startsWith('data: ') && element.endsWith('}')) {
           const out = element.replace('data: ', '').trim()
           const json = JSON.parse(out)
+          console.log(`index: ${idx}, json: ${json.response}`)
           const data = {
             id: 'chatcmpl-123',
             object: 'chat.completion.chunk',
@@ -121,9 +122,9 @@ export default {
               },
             ],
           }
-          if (index === 0 || index === 2) {
-            data.choices[0].delta.content = json.response.trim()
-          }
+          // if (idx === 0 || idx === 2) {
+          //   data.choices[0].delta.content = json.response.trim()
+          // }
           writer.write(textEncoder.encode(`data: ${JSON.stringify(data)}\n\n`))
         }
       })
