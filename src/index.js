@@ -36,7 +36,20 @@ export default {
     }
 
     const chat = await request.json()
-    const model = chat.model
+    let { model, stream } = chat
+    console.log('original model', model)
+    console.log('original stream', stream)
+
+    if (!stream) {
+      stream = false
+    }
+    if (model.includes('gpt-4') || model.includes('gpt-3')) {
+      model = '@cf/meta/llama-2-7b-chat-fp16'
+    }
+
+    console.log('new model', model)
+    console.log('new stream', stream)
+
     const messages = [
       {
         role: 'system',
@@ -47,10 +60,10 @@ export default {
     ]
     const resp = await ai.run(model, {
       messages,
-      stream: chat.stream || false,
+      stream: stream,
     })
 
-    if (!chat.stream) {
+    if (!stream) {
       const output = {
         // id: 'chatcmpl-123',
         object: 'chat.completion',
@@ -80,7 +93,7 @@ export default {
     for await (const part of resp) {
       const text = textDecoder.decode(part)
       const lines = text.split('\n')
-      lines.forEach((element) => {
+      lines.forEach((element, index) => {
         if (element.includes('[DONE]')) {
           const data = {
             id: 'chatcmpl-123',
@@ -99,7 +112,17 @@ export default {
             object: 'chat.completion.chunk',
             created: Date.now(),
             model: model,
-            choices: [{ index: 0, delta: { role: 'assistant', content: json.response }, logprobs: null, finish_reason: null }],
+            choices: [
+              {
+                index: 0,
+                delta: { role: 'assistant', content: json.response },
+                logprobs: null,
+                finish_reason: null,
+              },
+            ],
+          }
+          if (index === 0 || index === 2) {
+            data.choices[0].delta.content = json.response.trim()
           }
           writer.write(textEncoder.encode(`data: ${JSON.stringify(data)}\n\n`))
         }
