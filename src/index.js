@@ -36,7 +36,6 @@ export default {
     }
 
     const chat = await request.json()
-    console.log(JSON.stringify(chat))
     const model = chat.model
     const messages = [
       {
@@ -73,7 +72,91 @@ export default {
       })
     }
 
-    return new Response(resp, {
+    // Using our readable and writable to handle streaming data
+    let { readable, writable } = new TransformStream()
+
+    let writer = writable.getWriter()
+    const textEncoder = new TextEncoder()
+    const textDecoder = new TextDecoder()
+
+    for await (const part of resp) {
+      const text = textDecoder.decode(part)
+      const lines = text.split('\n')
+      lines.forEach((element) => {
+        if (element.includes('[DONE]')) {
+          const data = {
+            id: 'chatcmpl-123',
+            object: 'chat.completion.chunk',
+            created: Date.now(),
+            model: model,
+            choices: [{ index: 0, delta: { role: 'assistant', content: null }, logprobs: null, finish_reason: 'stop' }],
+          }
+          writer.write(textEncoder.encode(`data: ${JSON.stringify(data)}\n\n`))
+        }
+        if (element.startsWith('data: ') && element.endsWith('}')) {
+          const out = element.replace('data: ', '').trim()
+          const json = JSON.parse(out)
+          // response.choices[0].message.content
+          // {"id":"chatcmpl-123","object":"chat.completion.chunk","created":1694268190,"model":"gpt-3.5-turbo-0125", "system_fingerprint": "fp_44709d6fcb", "choices":[{"index":0,"delta":{"role":"assistant","content":""},"logprobs":null,"finish_reason":null}]}
+          // const output = { choices: [{ delta: { "index":0, content: json.response.trim() }}] }
+          const data = {
+            id: 'chatcmpl-123',
+            object: 'chat.completion.chunk',
+            created: Date.now(),
+            model: model,
+            choices: [{ index: 0, delta: { role: 'assistant', content: json.response }, logprobs: null, finish_reason: null }],
+          }
+
+          // writer.write(textEncoder.encode(output))
+          writer.write(textEncoder.encode(`data: ${JSON.stringify(data)}\n\n`))
+        }
+      })
+    }
+
+
+    // for await (const part of resp) {
+    //   const text = textDecoder.decode(part)
+    //   const lines = text.split('\n')
+    //   lines.forEach((element) => {
+    //     if (element.includes('[DONE]')) {
+    //       const output = {
+    //         id: 'chatcmpl-123',
+    //         object: 'chat.completion.chunk',
+    //         created: Date.now(),
+    //         model: model,
+    //         choices: [{ index: 0, delta: { role: 'assistant', content: null }, logprobs: null, finish_reason: 'stop' }],
+    //       }
+    //       writer.write(textEncoder.encode(JSON.stringify(output)))
+    //     }
+    //     if (element.startsWith('data: ') && element.endsWith('}')) {
+    //       const out = element.replace('data: ', '').trim()
+    //       const json = JSON.parse(out)
+    //       // response.choices[0].message.content
+    //       // {"id":"chatcmpl-123","object":"chat.completion.chunk","created":1694268190,"model":"gpt-3.5-turbo-0125", "system_fingerprint": "fp_44709d6fcb", "choices":[{"index":0,"delta":{"role":"assistant","content":""},"logprobs":null,"finish_reason":null}]}
+    //       // const output = { choices: [{ delta: { "index":0, content: json.response.trim() }}] }
+    //       const output = {
+    //         id: 'chatcmpl-123',
+    //         object: 'chat.completion.chunk',
+    //         created: Date.now(),
+    //         model: model,
+    //         choices: [{ index: 0, delta: { role: 'assistant', content: json.response.trim() }, logprobs: null, finish_reason: null }],
+    //       }
+
+    //       // writer.write(textEncoder.encode(output))
+    //       writer.write(textEncoder.encode(JSON.stringify(output)))
+    //       // write some newline characters (doesnt affect JSON parsing)
+    //       // const uint8 = new Uint8Array(1000)
+    //       // uint8.fill(10)
+    //       // writer.write(uint8)
+    //       console.log(JSON.stringify(output))
+    //       console.log(readable)
+    //     }
+    //   })
+    // }
+
+    writer.close()
+
+    return new Response(readable, {
       headers: { 'content-type': 'text/event-stream' },
     })
   },
