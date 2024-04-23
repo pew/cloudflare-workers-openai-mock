@@ -44,7 +44,7 @@ export default {
       stream = false
     }
     if (model.includes('gpt-4') || model.includes('gpt-3')) {
-      model = '@cf/meta/llama-2-7b-chat-fp16'
+      model = '@cf/meta/llama-3-8b-instruct'
     }
 
     console.log('new model', model)
