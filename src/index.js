@@ -27,9 +27,36 @@ function handleOptions(request) {
   }
 }
 
+function handleAuth(header, token) {
+  if (!header) {
+    return false
+  }
+
+  const apiKey = header.split(' ')
+  if (header && apiKey[0] === 'Bearer' && apiKey[1] === token) {
+    return true
+  } else {
+    return false
+  }
+}
+
 export default {
   async fetch(request, env, ctx) {
     const ai = new Ai(env.AI, { sessionOptions: { ctx } })
+    const { headers } = request
+
+    const authHeader = handleAuth(headers.get('authorization'), env.token)
+    if (!authHeader) {
+      const resp = {
+        error: {
+          message: 'Incorrect API key provided.',
+          type: 'invalid_request_error',
+          param: null,
+          code: 'invalid_api_key',
+        },
+      }
+      return new Response(JSON.stringify(resp), { headers: { 'content-type': 'application/json; charset=utf-8' }, status: 401 })
+    }
 
     if (request.method == 'OPTIONS') {
       return handleOptions(request)
@@ -122,9 +149,6 @@ export default {
               },
             ],
           }
-          // if (idx === 0 || idx === 2) {
-          //   data.choices[0].delta.content = json.response.trim()
-          // }
           writer.write(textEncoder.encode(`data: ${JSON.stringify(data)}\n\n`))
         }
       })
