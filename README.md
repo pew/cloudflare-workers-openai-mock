@@ -2,15 +2,23 @@
 
 this project aims to convert / proxy Cloudflare Workers AI responses to OpenAI API compatible responses so Workers AI models can be used with any OpenAI / ChatGPT compatible client
 
-## installation
-
-tba
-
-## features
-
 - supports streaming and non-streaming responses
 - rewrites the different models 'gpt-3' and 'gpt-4' to use `@cf/meta/llama-2-7b-chat-fp16`
 - if the openAI client can be configured to provide other model names, just put in the cloudflare model id instead of gpt-4
+
+## installation
+
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/pew/cloudflare-workers-openai-mock)
+
+1. create a [Cloudflare Account](https://dash.cloudflare.com/)
+2. clone this repo
+3. run `npm run deploy`
+
+after the script has been deployed, you'll get an URL which you can use as your OpenAI API endpoint for other applications, something like this:
+
+```
+https://openai-api.foobar.workers.dev
+```
 
 ## use with llm
 
