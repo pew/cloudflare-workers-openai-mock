@@ -64,3 +64,29 @@ use it without streaming:
 ```shell
 llm chat --no-stream -m cfllama3
 ```
+
+### use with chatblade
+
+[chatblade](https://github.com/npiv/chatblade) is a cool CLI utility for ChatGPT. It was a bit harder to configure to use it with a custom endpoint and model, but this seems to work:
+
+```shell
+export OPENAI_API_KEY="your-own-auth-key" # your worker secret api key
+export OPENAI_API_AZURE_ENGINE="@cf/meta/llama-3-8b-instruct" # the model you want to use
+export OPENAI_API_VERSION="@cf/meta/llama-3-8b-instruct" # again, the model you want to use
+export AZURE_OPENAI_ENDPOINT="https://openai-api.foobar.workers.dev/" # your workers endpoint
+export OPENAI_API_TYPE=azure # I don't know why this is required
+```
+
+use Chatblade like this then:
+
+```shell
+chatblade -i -c "@cf/meta/llama-3-8b-instruct" # interactive mode as a chat
+chatblade -c "@cf/meta/llama-3-8b-instruct" "tell a joke" # single prompt
+```
+
+### use with Pal Chat on iOS
+
+There's [Pal Chat](https://apps.apple.com/us/app/pal-chat-ai-chat-client/id6447545085) for iOS which can be used with custom endpoints.
+
+- settings → modify custom host → `openai-api.foobar.workers.dev` → enter api key
+- modify custom model → your model name, for example: `@cf/meta/llama-3-8b-instruct`
