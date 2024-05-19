@@ -1,5 +1,9 @@
 # OpenAI API mock / proxy Worker
 
+There's now **official Cloudflare (Workers) AI support** for OpenAI comptabile API endpoints, I recommend using this instead: [OpenAI compatible API endpoints](https://developers.cloudflare.com/workers-ai/configuration/open-ai-compatibility/)
+
+---
+
 This project aims to convert/proxy Cloudflare Workers AI responses to OpenAI API compatible responses so that [Cloudflare Workers AI](https://developers.cloudflare.com/workers-ai/) models can be used with any OpenAI/ChatGPT compatible client.
 
 - Supports streaming and non-streaming responses
